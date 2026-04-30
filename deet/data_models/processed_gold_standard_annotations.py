@@ -3,7 +3,7 @@
 import csv
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Generic
+from typing import Any, Generic, Literal
 
 from loguru import logger
 from pydantic import BaseModel
@@ -325,6 +325,7 @@ class ProcessedAnnotationData(
         self,
         file_path: Path,
         document_base_dir: Path | None = None,
+        path_type: Literal["full", "relative", "file"] = "file",
     ) -> None:
         """Export a csv mapper to link document IDs and filenames."""
         pre_fill: dict[int, Path] = {}
@@ -354,12 +355,23 @@ class ProcessedAnnotationData(
                     )
                     raise ValueError(no_doc_identity_err)
 
+                file_path = pre_fill.get(doc_id)  # type:ignore[assignment]
+                if isinstance(file_path, Path):
+                    if path_type == "full":
+                        file_path = file_path.absolute()
+                    elif path_type == "relative":
+                        pass
+                    elif path_type == "file":
+                        file_path = Path(file_path.name)
+                    else:
+                        bad_filepath_formatting_err = (
+                            f"path_type {path_type} is "
+                            "not permitted. use `full`, `relative`, `file`."
+                        )
+                        raise NotImplementedError(bad_filepath_formatting_err)
+
                 writer.writerow(
-                    {
-                        "document_id": doc_id,
-                        "name": d.name,
-                        "file_path": pre_fill.get(doc_id),  # None if no match found
-                    }
+                    {"document_id": doc_id, "name": d.name, "file_path": file_path}
                 )
 
 
