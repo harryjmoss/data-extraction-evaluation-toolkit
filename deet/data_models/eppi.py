@@ -231,11 +231,20 @@ class EppiDocument(Document):
 
     @field_validator("year", mode="before")
     @classmethod
-    def empty_year_string_to_none(cls, value: str) -> str | None:
+    def empty_year_string_to_none(cls, value: Any) -> int | None:  # noqa:ANN401
         """Parse an empty string year to None or return as is."""
-        if value == "":
+        if value == "" or value is None:
             return None
-        return value
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            stripped_value = value.strip()
+            if stripped_value == "":
+                return None
+            if stripped_value.isdigit():
+                return int(stripped_value)
+        bad_year = f"unable to parse year: {value!r}"
+        raise ValueError(bad_year)
 
     @field_validator("date_created", mode="before")
     @classmethod
