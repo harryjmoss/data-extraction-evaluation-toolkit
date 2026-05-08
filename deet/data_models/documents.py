@@ -192,7 +192,10 @@ class DocumentIdentity(BaseModel):
         return id_creation_map[id_source]
 
     def _eppi_item_id(self) -> int:
-        """Map an existing item_id (parsed as document_id)."""
+        """
+        Map an existing item_id (parsed as external_id
+        in DocumentIdentity instance).
+        """
         # we're going to assume that our `document_id`, received
         # from parsing eppi-json to EppiDocument is always going
         # to be eppi, otherwise this method should be extended to
