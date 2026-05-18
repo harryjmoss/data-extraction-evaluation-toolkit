@@ -100,7 +100,7 @@ class GoldStandardLLMEvaluator:
             for document in self.gold_standard_annotated_documents:
                 doc_id = document.document.safe_identity.document_id
                 logger.debug(
-                    f"Extracting gold standard and LLM prediction for" f" doc {doc_id}"
+                    f"Extracting gold standard and LLM prediction for doc {doc_id}"
                 )
                 gs_val = document.get_attribute_annotation(attribute).output_data
                 y_true.append(gs_val)
@@ -197,6 +197,7 @@ class GoldStandardLLMEvaluator:
                 f,
                 fieldnames=[
                     "document_id",
+                    "external_id",
                     "document_name",
                     "attribute_id",
                     "attribute_label",
@@ -237,6 +238,7 @@ class GoldStandardLLMEvaluator:
                     writer.writerow(
                         {
                             "document_id": doc.document.safe_identity.document_id,
+                            "external_id": doc.document.safe_identity.external_id,
                             "document_name": doc.document.name,
                             "attribute_id": attribute.attribute_id,
                             "attribute_label": attribute.attribute_label,

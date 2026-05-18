@@ -191,7 +191,9 @@ class EppiDocument(Document):
     """
 
     name: str = Field(default="", validation_alias=AliasChoices("Title", "name"))
-    document_id: int = Field(validation_alias=AliasChoices("ItemId", "document_id"))
+    document_id: int | str = Field(
+        validation_alias=AliasChoices("ItemId", "document_id")
+    )
 
     model_config = ConfigDict(validate_by_name=True, validate_by_alias=True)  # type: ignore[typeddict-unknown-key]
 
@@ -226,6 +228,23 @@ class EppiDocument(Document):
         default=None, validation_alias=AliasChoices("Keywords", "keywords")
     )
     doi: str | None = Field(default=None, validation_alias=AliasChoices("DOI", "doi"))
+
+    @field_validator("year", mode="before")
+    @classmethod
+    def empty_year_string_to_none(cls, value: Any) -> int | None:  # noqa:ANN401
+        """Parse an empty string year to None or return as is."""
+        if value == "" or value is None:
+            return None
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            stripped_value = value.strip()
+            if stripped_value == "":
+                return None
+            if stripped_value.isdigit():
+                return int(stripped_value)
+        bad_year = f"unable to parse year: {value!r}"
+        raise ValueError(bad_year)
 
     @field_validator("date_created", mode="before")
     @classmethod
