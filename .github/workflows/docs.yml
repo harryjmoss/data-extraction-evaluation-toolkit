@@ -12,15 +12,16 @@ on:
       - main
       - development
 
-permissions:
-  contents: write
-
 jobs:
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0 
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
@@ -35,7 +36,7 @@ jobs:
           version: "0.11.11"
 
       - name: Restore uv cache
-        uses: actions/cache@v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: /tmp/.uv-cache
           key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
@@ -49,15 +50,46 @@ jobs:
       - name: Build documentation
         run: uv run mkdocs build
 
-      - name: Publish documentation on GitHub pages
-        if: success() && github.event_name != 'pull_request'
+      - name: Deploy versioned docs with mike
+        if: github.event_name != 'pull_request'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            uv run mike deploy --push --update-aliases ${{ github.ref_name }} latest
-            uv run mike set-default --push latest
+            uv run mike deploy --update-aliases ${{ github.ref_name }} latest
+            uv run mike set-default latest
           elif [ "${{ github.ref_name }}" = "development" ]; then
-            uv run mike deploy --push --update-aliases development
+            uv run mike deploy --update-aliases development
           fi
+
+      - name: Push gh-pages branch
+        if: github.event_name != 'pull_request'
+        run: git push origin gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Switch to gh-pages for artifact upload
+        if: github.event_name != 'pull_request'
+        run: git checkout gh-pages
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: .
+
+  deploy:
+    needs: docs
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
