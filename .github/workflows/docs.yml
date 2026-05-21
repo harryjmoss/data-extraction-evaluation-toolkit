@@ -12,11 +12,13 @@ on:
       - main
       - development
 
+permissions:
+  contents: write
+
 jobs:
   docs:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
       - name: Checkout source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -52,10 +54,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            uv run mike deploy --update-aliases ${{ github.ref_name }} latest
-            uv run mike set-default latest
+            uv run mike deploy ${{ github.ref_name }}
           elif [ "${{ github.ref_name }}" = "development" ]; then
-            uv run mike deploy --update-aliases development
+            uv run mike deploy --update-aliases development latest
+            uv run mike set-default latest
           fi
 
       - name: Push gh-pages branch
