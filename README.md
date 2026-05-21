@@ -1,5 +1,8 @@
 # data-extraction-evaluation-toolkit
-An incredible new docs update!
+
+The dev docs - this is even more up to date! What a version!
+
+
 The Data Extraction and Evaluation Toolkit (DEET) is a suite of tools, data models, etc. for extracting data from documents (e.g. papers) and evaluating the performance of such extraction tasks.
 
 [Docs](https://destiny-evidence.github.io/data-extraction-evaluation-toolkit/)
