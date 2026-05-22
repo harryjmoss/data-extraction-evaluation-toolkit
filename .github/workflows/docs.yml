@@ -54,10 +54,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           if [ "${{ github.ref_type }}" = "tag" ]; then
-            uv run mike deploy ${{ github.ref_name }}
+            uv run mike deploy --update-aliases ${{ github.ref_name }} latest
+            uv run mike set-default --push latest
           elif [ "${{ github.ref_name }}" = "development" ]; then
-            uv run mike deploy --update-aliases development latest
-            uv run mike set-default latest
+            uv run mike deploy --update-aliases development
           fi
 
       - name: Push gh-pages branch
