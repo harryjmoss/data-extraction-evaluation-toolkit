@@ -2,6 +2,7 @@
 
 The dev docs - this is even more up to date! What a version!
 
+This is supposed to be newer than the tagged version v1.1.1
 
 The Data Extraction and Evaluation Toolkit (DEET) is a suite of tools, data models, etc. for extracting data from documents (e.g. papers) and evaluating the performance of such extraction tasks.
 
